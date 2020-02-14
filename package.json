@@ -1,0 +1,44 @@
+{
+    "name": "ftnt-devops-ci",
+    "version": "0.0.0",
+    "description": "A Node.js project format checking and linting tool for CI practices.",
+    "main": "index.js",
+    "scripts": {
+        "format": "prettier --write \"**/*.{js,json}\"",
+        "format:check": "prettier --check \"**/*.{js,json}\"",
+        "lint": "eslint",
+        "test": "mocha"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/fortinet/ftnt-devops-ci.git"
+    },
+    "keywords": [
+        "format",
+        "lint",
+        "nodejs"
+    ],
+    "author": "Fortinet <github@fortinet.com>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/fortinet/ftnt-devops-ci/issues"
+    },
+    "homepage": "https://github.com/fortinet/ftnt-devops-ci#readme",
+    "bin": {
+        "ftnt-devops-ci": "bin/ftnt-devops-ci.js"
+    },
+    "dependencies": {
+        "chalk": "^3.0.0",
+        "commander": "^4.1.0",
+        "comment-json": "^2.4.1",
+        "eslint": "^6.8.0",
+        "inquirer": "^7.0.4",
+        "prettier": "^1.19.1",
+        "shelljs": "^0.8.3",
+        "tslint": "^5.18.0",
+        "typescript": "^3.5.3"
+    },
+    "devDependencies": {
+        "mocha": "^6.2.0"
+    }
+}
