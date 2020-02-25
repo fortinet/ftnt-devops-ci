@@ -26,10 +26,8 @@ const moduleRoot = pa.resolve(`${__filename}`, '../../'); // the module director
 const modulePackagePath = pa.resolve(moduleRoot, 'package.json'); // the file path of the module package.json
 const modulePackageJson = require(modulePackagePath); // the content of the module package.json
 
-const appPackagePath = pa.resolve(process.cwd(), 'package.json');
-
-// TODO: file may not exist. solve this problem
-const appInfo = fileExist(appPackagePath) && require(pa.resolve(process.cwd(), 'package.json'));
+let appPackagePath;
+let appInfo = {};
 
 const relatedPath = pa.normalize(`${__dirname}/..`);
 const templatesPath = `${relatedPath}/templates`;
@@ -111,6 +109,11 @@ const loadTextFileFromGitHub = (account, repo, filePath, branch = 'master') => {
     });
 };
 
+const updateAppDir = (cwdPath) => {
+    appPackagePath = pa.resolve(cwdPath, 'package.json');
+    appInfo = fileExist(appPackagePath) && require(appPackagePath);
+}
+
 const readFile = (filePath, printStdErr = true) => {
     try {
         const file = fs.readFileSync(pa.resolve(filePath));
@@ -184,6 +187,7 @@ const optionValidationCheck = options => {
 };
 
 const update = async options => {
+    updateAppDir(options.workDir || process.cwd());
     const [prettierrc, eslintrc, tslint] = await Promise.all([
         loadTextFileFromGitHub(packageScope, packageName, '.prettierrc'),
         loadTextFileFromGitHub(packageScope, packageName, '.eslintrc'),
@@ -795,6 +799,7 @@ const configNpm = async options => {
 };
 
 const config = async options => {
+    updateAppDir(options.workDir || process.cwd());
     if (options.vscode) {
         await configVsCode(options);
     } else if (options.npm) {
@@ -816,7 +821,9 @@ program
     .description('Initial and create default config files in work directory.')
     .option('-J, --JavaScript', 'Initial for JavaScript project.')
     .option('-T, --TypeScript', 'Initial for TypeScript project.')
+    .option('--work-dir <dir>', 'specify the working directory.')
     .action(options => {
+        updateAppDir(options.workDir || process.cwd());
         fs.copyFile(`${templatesPath}/.prettierrc`, `${process.cwd()}/.prettierrc`, err => {
             if (err) {
                 throw err;
@@ -875,7 +882,9 @@ program
     .option('-T, --tslint_ignore <glob>', 'Glob pattern for tslint ignore.')
     .option('--parser <name>', 'Specify a prettier parser to use. Use with --format.')
     .option('--ignore_pattern <pattern>', 'Specify an ignore pattern to use. Use with --lint.')
+    .option('--work-dir <dir>', 'specify the working directory.')
     .action(async (path, options) => {
+        updateAppDir(options.workDir || process.cwd());
         path = `"${path}"`;
         const no_options = !(options.format || options.lint || options.tslint);
         let ignorePath;
@@ -1005,7 +1014,9 @@ program
     .option('-T, --tslint_ignore <glob>', 'Glob pattern for tslint ignore.')
     .option('--parser <name>', 'Specify a prettier parser to use. Use with --format.')
     .option('--ignore_pattern <pattern>', 'Specify an ignore pattern to use. Use with --lint.')
+    .option('--work-dir <dir>', 'specify the working directory.')
     .action(async (path, options) => {
+        updateAppDir(options.workDir || process.cwd());
         path = `"${path}"`;
         const no_options = !(options.format || options.lint || options.tslint);
         let ignorePath;
@@ -1131,6 +1142,7 @@ program
     .option('-f, --format', 'Update .prettierrc only.')
     .option('-l, --lint', 'Update .eslintrc only.')
     .option('-t, --tslint', 'Update tslint.json only.')
+    .option('--work-dir <dir>', 'specify the working directory.')
     .action(update);
 
 program
@@ -1150,6 +1162,7 @@ program
             'of the current directory. This command assumes the current directory is the root of' +
             ' a VSCode project.'
     )
+    .option('--work-dir <dir>', 'specify the working directory.')
     .action(config);
 
 main();
