@@ -26,6 +26,7 @@ const moduleRoot = pa.resolve(`${__filename}`, '../../'); // the module director
 const modulePackagePath = pa.resolve(moduleRoot, 'package.json'); // the file path of the module package.json
 const modulePackageJson = require(modulePackagePath); // the content of the module package.json
 
+let currentWorkingDir;
 let appPackagePath;
 let appInfo = {};
 
@@ -110,6 +111,7 @@ const loadTextFileFromGitHub = (account, repo, filePath, branch = 'master') => {
 };
 
 const updateAppDir = (cwdPath) => {
+    currentWorkingDir = cwdPath;
     appPackagePath = pa.resolve(cwdPath, 'package.json');
     appInfo = fileExist(appPackagePath) && require(appPackagePath);
 }
@@ -137,7 +139,7 @@ const writeFile = async (filePath, content, promptForOverwrite = true) => {
     // check file existence and decide whether prompt for overwrite file confirmation or not
     let answer =
         (promptForOverwrite &&
-            FS_STAT_IS_FILE === fileExist(filePath) &&
+            FS_STAT_IS_FILE === fileExist(filePath, false) &&
             (await iq.prompt(question))) ||
         null;
     if (!answer || (answer && answer.confirm)) {
@@ -189,19 +191,19 @@ const optionValidationCheck = options => {
 const update = async options => {
     updateAppDir(options.workDir || process.cwd());
     const [prettierrc, eslintrc, tslint] = await Promise.all([
-        loadTextFileFromGitHub(packageScope, packageName, '.prettierrc'),
-        loadTextFileFromGitHub(packageScope, packageName, '.eslintrc'),
-        loadTextFileFromGitHub(packageScope, packageName, 'tslint.json')
+        loadTextFileFromGitHub(packageScope, packageName, 'templates/.prettierrc'),
+        loadTextFileFromGitHub(packageScope, packageName, 'templates/.eslintrc'),
+        loadTextFileFromGitHub(packageScope, packageName, 'templates/tslint.json')
     ]);
 
     // check write file directory is global or current directory
     let filePathFormat = pa.resolve(
-        (!!options.global && moduleRoot) || process.cwd(),
+        (!!options.global && moduleRoot) || currentWorkingDir,
         '.prettierrc'
     );
-    let filePathLint = pa.resolve((!!options.global && moduleRoot) || process.cwd(), '.eslintrc');
+    let filePathLint = pa.resolve((!!options.global && moduleRoot) || currentWorkingDir, '.eslintrc');
     let filePathTsLint = pa.resolve(
-        (!!options.global && moduleRoot) || process.cwd(),
+        (!!options.global && moduleRoot) || currentWorkingDir,
         'tslint.json'
     );
 
@@ -911,7 +913,7 @@ program
                 (await new Promise(resolve => {
                     sh.exec(
                         `${prettierPath} --config ${prettierConfigPath} --ignore-path ${ignorePath}${argParser} --check ${path}`,
-                        { silent: true },
+                        { silent: true, cwd: currentWorkingDir },
                         (code, stdout, stderr) => {
                             if (stdout !== '') {
                                 console.info(stdout);
@@ -939,7 +941,7 @@ program
                     console.info('\nChecking eslinting...');
                     sh.exec(
                         `${eslintPath} -c ${eslintConfigPath} --ignore-path ${ignorePath} --ignore-pattern "**/*.json" ${path}`,
-                        { silent: true },
+                        { silent: true, cwd: currentWorkingDir },
                         (code, stdout, stderr) => {
                             if (stdout !== '') {
                                 console.info(stdout);
@@ -967,7 +969,7 @@ program
                     console.info('\nChecking TSlint...');
                     sh.exec(
                         `${tslintPath} -c ${tslintConfigPath} -p ${tslintProjectPath}${ignoreGlob} ${path}`,
-                        { silent: true },
+                        { silent: true, cwd: currentWorkingDir },
                         (code, stdout, stderr) => {
                             if (stdout !== '') {
                                 console.info(stdout);
@@ -1043,7 +1045,7 @@ program
                 (await new Promise(resolve => {
                     sh.exec(
                         `${prettierPath} --config ${prettierConfigPath}${argParser} --ignore-path ${ignorePath}${argParser} --write ${path}`,
-                        { silent: true },
+                        { silent: true, cwd: currentWorkingDir },
                         (code, stdout, stderr) => {
                             if (stdout !== '') {
                                 console.info(stdout);
@@ -1070,6 +1072,7 @@ program
                     console.log('Auto fixing eslint...');
                     sh.exec(
                         `${eslintPath} -c ${eslintConfigPath} --ignore-path ${ignorePath}${argIgnorePattern} --fix ${path}`,
+                        { silent: true, cwd: currentWorkingDir },
                         (code, stdout, stderr) => {
                             if (stdout !== '') {
                                 console.info(stdout);
@@ -1095,7 +1098,7 @@ program
                 (await new Promise(resolve => {
                     sh.exec(
                         `${tslintPath} -c ${tslintConfigPath} -p ${tslintProjectPath}${ignoreGlob} --fix ${path}`,
-                        { silent: true },
+                        { silent: true, cwd: currentWorkingDir },
                         (code, stdout, stderr) => {
                             if (stdout !== '') {
                                 console.info(stdout);
