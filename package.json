@@ -28,6 +28,7 @@
         "ftnt-devops-ci": "bin/ftnt-devops-ci.js"
     },
     "dependencies": {
+        "@typescript-eslint/parser": "^2.22.0",
         "chalk": "^3.0.0",
         "commander": "^4.1.0",
         "comment-json": "^2.4.1",
