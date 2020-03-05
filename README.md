@@ -8,11 +8,11 @@ A Node.js project format checking and linting tool for CI practices.
 
 Use github link:
 
-    $ npm install --save-dev guardhao104/ftnt-devops-ci
+    $ npm install --save-dev fortinet/ftnt-devops-ci
 
 Install globally:
 
-    $ sudo npm install -g guardhao104/ftnt-devops-ci
+    $ sudo npm install -g fortinet/ftnt-devops-ci
 
 ## Usage
 
@@ -68,9 +68,9 @@ If the current directory already has `.prettierrc` or `.eslintrc` or `tslint.jso
 
 If the current directory already has `.prettierignore` or `.eslintignore` file, it/them will be used as ignore file when running check and fix commends. Otherwise, the default ignore config will be used.
 
-You are allowed to use `--format_ignore <path>` or `-F <path>` to specify format checking ignore file. 
+You are allowed to use `--format_ignore <path>` or `-F <path>` to specify format checking ignore file.
 
-Use `--lint_ignore <path>` or `-L <path>` to specify linting ignore file. 
+Use `--lint_ignore <path>` or `-L <path>` to specify linting ignore file.
 
 Use `--tslint_ignore <grob>` or `-T <grob>` to specify a grob pattern for tslint ignoring files.
 
