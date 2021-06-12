@@ -1,0 +1,100 @@
+name: >-
+  Publish a semver release for node package.
+
+on:
+  # Run by manual trigger
+  workflow_dispatch:
+    inputs:
+      version-level:
+        description: >-
+          The level of the semver version.
+          Accepted inputs: major, minor, patch, and prerelease.
+        required: true
+        default: patch
+      pre-id:
+        description: >-
+          A valid semver pre-release id to bump version as a pre-release.
+          If specified, the versioning behavior will become
+          'premajor', 'preminor', 'prepatch', and 'prerelease'.
+          GitHub 'pre-release' flag will also be set accordingly.
+        required: false
+      custom-version:
+        description: >-
+          The custom version to bump to.
+          If specified, it will be used instead of the other versioning parameters.
+          It must be a valid semver format.
+        required: false
+jobs:
+  main_job:
+    runs-on: ubuntu-latest
+    name: main job
+    steps:
+      - name: create release branch
+        id: create-branch
+        uses: fortinet/github-action-version-branch@1.0.2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          base-branch: main
+          name-prefix: rel_
+          version-level: ${{ github.event.inputs.version-level }}
+          pre-id: ${{ github.event.inputs.pre-id }}
+          custom-version: ${{ github.event.inputs.custom-version }}
+      - name: checkout dev release branch
+        uses: actions/checkout@v2
+        with:
+          # set ref to the main
+          ref: main
+      # configure the commit author for the version bump commit
+      # use the github-bot account
+      - name: config commit author (bot)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      # install all dependencies
+      - name: install project dependencies
+        run: npm ci
+      # bump version by running `npm version`
+      - name: bump version
+        id: bump-version
+        # use the head version from the output of step: create-branch
+        # use allow-same-version option
+        run: |
+          npm config set sign-git-tag false
+          npm config set sign-git-commit false
+          npm version ${{ steps['create-branch'].outputs['head-version'] }} --no-git-tag-version
+          git add -u
+          git commit -m "release: ${{ steps['create-branch'].outputs['head-version'] }}" --no-gpg-sign
+      - name: push changes
+        id: push-changes
+        # push commits only. Even though a tag is created, it will not be pushed.
+        run: |
+          git push
+          echo "::set-output name=tag-commit::$(git rev-parse HEAD)"
+      # prepare release assets
+      - name: make dist
+        run: npm run make-dist
+      # create a release
+      - id: create-release
+        name: create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ steps['create-branch'].outputs['head-version'] }} # Use the head version from the output of the `create-branch` step
+          release_name: "dev release: ${{ steps['create-branch'].outputs['head-version'] }}" # Use the head version from the output of the `create-branch` step
+          draft: false
+          prerelease: ${{ steps['create-branch'].outputs['is-prerelease'] == 'true' }} # Use the output from the `create-branch` step
+          commitish: ${{ steps['push-changes'].outputs['tag-commit'] }} # Use the output: `tag-commit` from a prev step
+      - id: upload-release-asset
+        name: upload release assets
+        uses: svenstaro/upload-release-action@2.2.0
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps['create-branch'].outputs['head-version'] }} # Use the output from the `create-branch` step
+          prerelease: ${{ steps['create-branch'].outputs['is-prerelease'] == 'true' }} # Use the output from the `create-branch` step
+          file: ./${{ steps['create-branch'].outputs['package-name'] }}*.tgz
+          file_glob: true
+          overwrite: true
+      - id: delete-rel-branch
+        name: delete rel branch
+        run: git push -d origin ${{ steps['create-branch'].outputs['head-branch'] }}
