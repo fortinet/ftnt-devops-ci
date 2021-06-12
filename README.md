@@ -10,11 +10,11 @@ A Node.js project format checking and linting tool for CI practices.
 
 Use github link:
 
-    $ npm install --save-dev guardhao104/ftnt-devops-ci
+    $ npm install --save-dev fortinet/ftnt-devops-ci
 
 Install globally:
 
-    $ sudo npm install -g guardhao104/ftnt-devops-ci
+    $ sudo npm install -g fortinet/ftnt-devops-ci
 
 ## Usage
 
