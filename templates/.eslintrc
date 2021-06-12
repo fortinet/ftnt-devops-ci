@@ -71,6 +71,9 @@
         }],
         "strict": "error",
         "valid-jsdoc": ["error", {
+            "prefer": {
+                "return": "returns"
+            },
             "requireReturn": false
         }],
         "yoda": "error"
