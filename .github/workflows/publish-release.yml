@@ -29,12 +29,12 @@ jobs:
     runs-on: ubuntu-latest
     name: main job
     steps:
-      - name: create release branch
+      - name: create version branch
         id: create-branch
-        uses: fortinet/github-action-version-branch@1.0.2
+        uses: fortinet/github-action-version-branch@1.1.2
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           base-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           name-prefix: rel_
           version-level: ${{ github.event.inputs.version-level }}
           pre-id: ${{ github.event.inputs.pre-id }}
