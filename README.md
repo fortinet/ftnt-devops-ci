@@ -10,11 +10,15 @@ A Node.js project format checking and linting tool for CI practices.
 
 Use github link:
 
-    $ npm install --save-dev fortinet/ftnt-devops-ci
+```bash
+npm install --save-dev https://github.com/fortinet/ftnt-devops-ci/releases/download/1.1.2/ftnt-devops-ci-1.1.2.tgz
+```
 
 Install globally:
 
-    $ sudo npm install -g fortinet/ftnt-devops-ci
+```bash
+sudo npm install -g https://github.com/fortinet/ftnt-devops-ci/releases/download/1.1.2/ftnt-devops-ci-1.1.2.tgz
+```
 
 ## Usage
 
@@ -22,21 +26,25 @@ Install globally:
 
 To initial for a JavaScript project:
 
-    $ ftnt-devops-ci init --JaveScript
+```bash
+npx ftnt-devops-ci init --JaveScript
+```
 
 To initial for a TypeScript project:
 
-    $ ftnt-devops-ci init --TypeScript
+```bash
+ftnt-devops-ci init --TypeScript
+```
 
 ### Local
 
 Add scripts as follow to `package.json`:
 
-```
+```json
     "scripts": {
         ...
-        "check": "ftnt-devops-ci check \"**/*.{js,json}\"",
-        "fix": "ftnt-devops-ci fix \"**/*.{js,json}\"",
+        "check": "npx ftnt-devops-ci check \"**/*.{js,json}\"",
+        "fix": "npx ftnt-devops-ci fix \"**/*.{js,json}\"",
         ...
     }
 ```
@@ -45,11 +53,15 @@ Add scripts as follow to `package.json`:
 
 Check format and linting:
 
-    $ ftnt-devops-ci check "**/*.{js,json}"
+```bash
+ftnt-devops-ci check "**/*.{js,json}"
+```
 
 Fix format and linting:
 
-    $ ftnt-devops-ci fix "**/*.{js,json}"
+```bash
+ftnt-devops-ci fix "**/*.{js,json}"
+```
 
 ## Options
 
@@ -76,6 +88,17 @@ Use `--lint_ignore <path>` or `-L <path>` to specify linting ignore file.
 
 Use `--tslint_ignore <grob>` or `-T <grob>` to specify a grob pattern for tslint ignoring files.
 
-## TODO list:
+## TODO list
 
 Updating tslint config.
+
+## Support
+
+Fortinet-provided scripts in this and other GitHub projects do not fall under the regular Fortinet technical support scope and are not supported by FortiCare Support Services.
+For direct issues, please refer to the [Issues](https://github.com/fortinet/ftnt-devops-ci/issues) tab of this GitHub project.
+
+For other questions related to this project, contact [github@fortinet.com](mailto:github@fortinet.com).
+
+## License
+
+[License](./LICENSE) © Fortinet Technologies. All rights reserved.
