@@ -29,12 +29,12 @@ jobs:
     runs-on: ubuntu-latest
     name: main job
     steps:
-      - name: create release branch
+      - name: create version branch
         id: create-branch
-        uses: fortinet/github-action-version-branch@1.0.2
+        uses: fortinet/github-action-version-branch@1.1.2
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           base-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           name-prefix: rel_
           version-level: ${{ github.event.inputs.version-level }}
           pre-id: ${{ github.event.inputs.pre-id }}
@@ -81,7 +81,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
           tag_name: ${{ steps['create-branch'].outputs['head-version'] }} # Use the head version from the output of the `create-branch` step
-          release_name: "dev release: ${{ steps['create-branch'].outputs['head-version'] }}" # Use the head version from the output of the `create-branch` step
+          release_name: "release: ${{ steps['create-branch'].outputs['head-version'] }}" # Use the head version from the output of the `create-branch` step
           draft: false
           prerelease: ${{ steps['create-branch'].outputs['is-prerelease'] == 'true' }} # Use the output from the `create-branch` step
           commitish: ${{ steps['push-changes'].outputs['tag-commit'] }} # Use the output: `tag-commit` from a prev step
