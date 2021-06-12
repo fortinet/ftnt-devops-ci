@@ -1,5 +1,5 @@
 name: >-
-  Publish a dev release (prerelease) on a selected branch.
+  Publish a semver release for node package.
 
 on:
   # Run by manual trigger
