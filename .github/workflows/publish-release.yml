@@ -11,10 +11,19 @@ on:
           Accepted inputs: major, minor, patch, and prerelease.
         required: true
         default: patch
-        custom-version:
+      pre-id:
         description: >-
-          The custom version to be used for branch, tag, and release. Do not use an existing tag in the repo.
-        required: true
+          A valid semver pre-release id to bump version as a pre-release.
+          If specified, the versioning behavior will become
+          'premajor', 'preminor', 'prepatch', and 'prerelease'.
+          GitHub 'pre-release' flag will also be set accordingly.
+        required: false
+      custom-version:
+        description: >-
+          The custom version to bump to.
+          If specified, it will be used instead of the other versioning parameters.
+          It must be a valid semver format.
+        required: false
 jobs:
   main_job:
     runs-on: ubuntu-latest
@@ -27,7 +36,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           base-branch: main
           name-prefix: rel_
-          custom-version: ${{ github.event.inputs['custom-version'] }}
+          version-level: ${{ github.event.inputs.version-level }}
+          pre-id: ${{ github.event.inputs.pre-id }}
+          custom-version: ${{ github.event.inputs.custom-version }}
       - name: checkout dev release branch
         uses: actions/checkout@v2
         with:
@@ -86,4 +97,4 @@ jobs:
           overwrite: true
       - id: delete-rel-branch
         name: delete rel branch
-        run: git push -d origin ${{ steps['create-branch'].outputs['head-branch']
+        run: git push -d origin ${{ steps['create-branch'].outputs['head-branch'] }}
