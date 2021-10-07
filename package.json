@@ -39,6 +39,7 @@
         "eslint-plugin-mocha": "^9.0.0",
         "eslint-plugin-prettier": "^4.0.0",
         "inquirer": "^7.0.4",
+        "path-parse": "^1.0.7",
         "prettier": "^2.4.1",
         "shelljs": "^0.8.3",
         "tslint": "^5.18.0",
