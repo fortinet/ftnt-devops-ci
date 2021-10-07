@@ -112,14 +112,6 @@ dist
 # VSCode workspace file
 *.code-workspace
 
-# end of github suggested gitignore
-
-# project-specific ignored files
-
-# local dev / test / dist / compile directories and files
-local
-out
-
 # npm specific
 package.json
 package-lock.json

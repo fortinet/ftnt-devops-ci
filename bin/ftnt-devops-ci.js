@@ -98,11 +98,7 @@ const loadTextFileFromGitHub = (account, repo, filePath, branch = 'master') => {
                                 'was still being sent.'
                         );
                     }
-                    resolve(
-                        Buffer.concat(buffers)
-                            .toString('utf8')
-                            .trim()
-                    );
+                    resolve(Buffer.concat(buffers).toString('utf8').trim());
                 });
                 res.on('error', e => reject(e));
             }
@@ -110,11 +106,11 @@ const loadTextFileFromGitHub = (account, repo, filePath, branch = 'master') => {
     });
 };
 
-const updateAppDir = (cwdPath) => {
+const updateAppDir = cwdPath => {
     currentWorkingDir = cwdPath;
     appPackagePath = pa.resolve(cwdPath, 'package.json');
     appInfo = fileExist(appPackagePath) && require(appPackagePath);
-}
+};
 
 const readFile = (filePath, printStdErr = true) => {
     try {
@@ -155,8 +151,9 @@ const writeFile = async (filePath, content, promptForOverwrite = true) => {
 
 const isPackageInstalledScoped = async (pkgName, scope) => {
     return await new Promise(resolve => {
-        const command = `npm list${(scope === INSTALL_SCOPE_GLOBAL && ' -g') ||
-            ''} --depth 0 ${pkgName}`;
+        const command = `npm list${
+            (scope === INSTALL_SCOPE_GLOBAL && ' -g') || ''
+        } --depth 0 ${pkgName}`;
         sh.exec(command, { silent: true }, (code, stdout) => {
             if (code !== 0) {
                 resolve({ name: null, version: null });
@@ -201,7 +198,10 @@ const update = async options => {
         (!!options.global && moduleRoot) || currentWorkingDir,
         '.prettierrc'
     );
-    let filePathLint = pa.resolve((!!options.global && moduleRoot) || currentWorkingDir, '.eslintrc');
+    let filePathLint = pa.resolve(
+        (!!options.global && moduleRoot) || currentWorkingDir,
+        '.eslintrc'
+    );
     let filePathTsLint = pa.resolve(
         (!!options.global && moduleRoot) || currentWorkingDir,
         'tslint.json'
@@ -644,8 +644,9 @@ const configNpm = async options => {
             )} directory nor globally. Try running one of the following commands to install it first?`
         );
         console.info(
-            `${ck.cyan('npm i ') + ck.cyan(packageScopedName)}\n${ck.cyan('npm i -g ') +
-                ck.cyan(packageScopedName)}`
+            `${ck.cyan('npm i ') + ck.cyan(packageScopedName)}\n${
+                ck.cyan('npm i -g ') + ck.cyan(packageScopedName)
+            }`
         );
     }
 
