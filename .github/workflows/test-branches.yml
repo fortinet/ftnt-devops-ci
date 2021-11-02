@@ -31,8 +31,8 @@ jobs:
       - name: Check - audit (production)
         run: npm audit --production
       - name: Check - format
-        run: npm run lint-check
-      - name: Check - build
-        run: npm run build
+        run: npm run check:format
+      - name: Check - lint
+        run: npm run check:lint
       - name: Run tests
         run: npm test

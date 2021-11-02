@@ -3,13 +3,11 @@
         "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",// Uses the recommended rules from the @typescript-eslint/eslint-plugin
         "plugin:@typescript-eslint/recommended",// Uses the recommended rules from the @typescript-eslint/eslint-plugin
-        "prettier", // Uses eslint-config-prettier to disable ESLint rules from @typescript-eslint/eslint-plugin that would conflict with prettier
-        "plugin:prettier/recommended", // Enables eslint-plugin-prettier and eslint-config-prettier. This will display prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
+        "eslint-config-prettier", // Uses eslint-config-prettier to **disable** ESLint rules from @typescript-eslint/eslint-plugin that would conflict with prettier
         "plugin:mocha/recommended"
       ],
     "parser": "@typescript-eslint/parser",
     "plugins": [
-        "prettier",
         "@typescript-eslint",
         "mocha"
     ],
@@ -24,7 +22,10 @@
         "sourceType": "module" // Allows for the use of imports
     },
     "rules": {
-        "prettier/prettier": "error",
+        "@typescript-eslint/naming-convention": [
+            "error",
+            {"selector": "variableLike", "format": ["camelCase", "UPPER_CASE"]}
+        ],
         "curly": "error",
         "dot-notation": "error",
         "eqeqeq": ["error", "always", {
@@ -83,7 +84,7 @@
     },
     // treat .js files as commonjs nodejs scripts
     "overrides": [{
-        "files": "./*.js",
+        "files": "**/*.js",
         "parserOptions": {
             "sourceType": "script"
         },

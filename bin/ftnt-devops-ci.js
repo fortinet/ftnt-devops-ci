@@ -66,18 +66,6 @@ const eslintIgnorePath = fs.existsSync(`${process.cwd()}/.eslintignore`)
     ? `${process.cwd()}/.eslintignore`
     : `${relatedPath}/.eslintignore`;
 
-// Tslint config files path
-const tslintLocalPath = pa.normalize(`${__dirname}/../../.bin/tslint`);
-const tslintPath = fs.existsSync(tslintLocalPath)
-    ? tslintLocalPath
-    : `${relatedPath}/node_modules/.bin/tslint`;
-const tslintConfigPath = fs.existsSync(`${process.cwd()}/tslint.json`)
-    ? `${process.cwd()}/tslint.json`
-    : `${relatedPath}/tslint.json`;
-const tslintProjectPath = fs.existsSync(`${process.cwd()}/tsconfig.json`)
-    ? `${process.cwd()}/tsconfig.json`
-    : `${relatedPath}/tsconfig.json`;
-
 const loadTextFileFromGitHub = (account, repo, filePath, branch = 'master') => {
     return new Promise((resolve, reject) => {
         let buffers = [];
@@ -187,10 +175,9 @@ const optionValidationCheck = options => {
 
 const update = async options => {
     updateAppDir(options.workDir || process.cwd());
-    const [prettierrc, eslintrc, tslint] = await Promise.all([
+    const [prettierrc, eslintrc] = await Promise.all([
         loadTextFileFromGitHub(packageScope, packageName, 'templates/.prettierrc'),
-        loadTextFileFromGitHub(packageScope, packageName, 'templates/.eslintrc'),
-        loadTextFileFromGitHub(packageScope, packageName, 'templates/tslint.json')
+        loadTextFileFromGitHub(packageScope, packageName, 'templates/.eslintrc')
     ]);
 
     // check write file directory is global or current directory
@@ -202,12 +189,8 @@ const update = async options => {
         (!!options.global && moduleRoot) || currentWorkingDir,
         '.eslintrc'
     );
-    let filePathTsLint = pa.resolve(
-        (!!options.global && moduleRoot) || currentWorkingDir,
-        'tslint.json'
-    );
 
-    let writeBoth = !options.format && !options.lint && !options.tslint;
+    let writeBoth = !options.format && !options.lint;
     let written = false;
 
     if (writeBoth || options.format) {
@@ -220,12 +203,6 @@ const update = async options => {
         written = await writeFile(filePathLint, eslintrc, !options.overwrite);
         if (written) {
             console.log(`${filePathLint} is now up-to-date.`);
-        }
-    }
-    if (writeBoth || options.tslint) {
-        written = await writeFile(filePathTsLint, tslint, !options.overwrite);
-        if (written) {
-            console.log(`${filePathTsLint} is now up-to-date.`);
         }
     }
 };
@@ -691,7 +668,29 @@ const configNpm = async options => {
     const scripts = new Map();
     // script: format
     scripts.set(
-        'format:check',
+        'fix',
+        createCommand(
+            extensions,
+            ignoreFiles,
+            globPatterns,
+            ['fix', '--lint', '--format'],
+            modulePath,
+            referenceScope === INSTALL_SCOPE_GLOBAL
+        )
+    );
+    scripts.set(
+        'check',
+        createCommand(
+            extensions,
+            ignoreFiles,
+            globPatterns,
+            ['check', '--lint', '--format'],
+            modulePath,
+            referenceScope === INSTALL_SCOPE_GLOBAL
+        )
+    );
+    scripts.set(
+        'check:format',
         createCommand(
             extensions,
             ignoreFiles,
@@ -702,9 +701,9 @@ const configNpm = async options => {
         )
     );
     scripts.set(
-        'eslint:check',
+        'check:lint',
         createCommand(
-            extensions.filter(e => e !== '.ts'),
+            extensions,
             ignoreFiles,
             globPatterns,
             ['c', '-l'],
@@ -713,18 +712,7 @@ const configNpm = async options => {
         )
     );
     scripts.set(
-        'tslint:check',
-        createCommand(
-            extensions.filter(t => t !== '.js'),
-            ignoreFiles,
-            globPatterns,
-            ['c', '-t'],
-            modulePath,
-            referenceScope === INSTALL_SCOPE_GLOBAL
-        )
-    );
-    scripts.set(
-        'format:fix',
+        'fix:format',
         createCommand(
             extensions,
             ignoreFiles,
@@ -735,9 +723,9 @@ const configNpm = async options => {
         )
     );
     scripts.set(
-        'eslint:fix',
+        'fix:lint',
         createCommand(
-            extensions.filter(e => e !== '.ts'),
+            extensions,
             ignoreFiles,
             globPatterns,
             ['f', '-l'],
@@ -745,18 +733,6 @@ const configNpm = async options => {
             referenceScope === INSTALL_SCOPE_GLOBAL
         )
     );
-    scripts.set(
-        'tslint:fix',
-        createCommand(
-            extensions.filter(t => t !== '.js'),
-            ignoreFiles,
-            globPatterns,
-            ['f', '-t'],
-            modulePath,
-            referenceScope === INSTALL_SCOPE_GLOBAL
-        )
-    );
-
     // read pacakge.json
 
     const f = async () => {
@@ -839,7 +815,7 @@ program
             }
             console.log('.prettierignore is created successfully.');
         });
-        if (options.JavaScript) {
+        if (options.JavaScript || options.TypeScript) {
             fs.copyFile(`${templatesPath}/.eslintrc`, `${process.cwd()}/.eslintrc`, err => {
                 if (err) {
                     throw err;
@@ -853,44 +829,24 @@ program
                 console.log('.eslintignore is created successfully.');
             });
         }
-        if (options.TypeScript) {
-            fs.copyFile(`${templatesPath}/tsconfig.json`, `${process.cwd()}/tsconfig.json`, err => {
-                if (err) {
-                    throw err;
-                }
-                console.log('tsconfig.json is created successfully.');
-            });
-            fs.copyFile(`${templatesPath}/tslint.json`, `${process.cwd()}/tslint.json`, err => {
-                if (err) {
-                    throw err;
-                }
-                console.log('tslint.json is created successfully.');
-            });
-        }
     })
     .on('--help', () => {
         console.log('\nJavaScript project use: init -J\nTypeScript project use: init -T');
     });
 
 // Check command
-program
-    .command('check <path>')
-    .alias('c')
-    .description('Checking files format and linting through <path>.')
-    .option('-f, --format', 'Only check format.')
-    .option('-l, --lint', 'Only check linting.')
-    .option('-t, --tslint', 'Only check typescript files linting')
-    .option('-F, --format_ignore <path>', 'Path to prettier ignore file.')
-    .option('-L, --lint_ignore <path>', 'Path to eslint ignore file.')
-    .option('-T, --tslint_ignore <glob>', 'Glob pattern for tslint ignore.')
-    .option('--parser <name>', 'Specify a prettier parser to use. Use with --format.')
-    .option('--ignore_pattern <pattern>', 'Specify an ignore pattern to use. Use with --lint.')
-    .option('--work-dir <dir>', 'specify the working directory.')
+addCommandOptions(
+    program
+        .command('check <path>')
+        .alias('c')
+        .description('Checking files format and linting through <path>.')
+)
     .action(async (path, options) => {
         updateAppDir(options.workDir || process.cwd());
         path = `"${path}"`;
-        const no_options = !(options.format || options.lint || options.tslint);
+        const noOptions = !(options.format || options.lint);
         let ignorePath;
+        let configPath;
         let hasError = false;
         const invalidOptions = optionValidationCheck(options);
         if (invalidOptions) {
@@ -904,8 +860,9 @@ program
             sh.exit(EXIT_CODE_ERROR);
             return;
         }
-        if (options.format || no_options) {
-            ignorePath = options.format_ignore ? options.format_ignore : prettierIgnorePath;
+        if (options.format || noOptions) {
+            configPath = typeof options.format === 'string' ? options.format : prettierConfigPath;
+            ignorePath = options.formatIgnore ? options.formatIgnore : prettierIgnorePath;
             const argParser = (options.parser && ` --parser ${options.parser}`) || '';
             console.info(
                 `Parser is set to: ${ck.cyan((argParser === '' && 'auto') || options.parser)}`
@@ -913,7 +870,7 @@ program
             hasError =
                 (await new Promise(resolve => {
                     sh.exec(
-                        `${prettierPath} --config ${prettierConfigPath} --ignore-path ${ignorePath}${argParser} --check ${path}`,
+                        `${prettierPath} --config ${configPath} --ignore-path ${ignorePath}${argParser} --check ${path}`,
                         { silent: true, cwd: currentWorkingDir },
                         (code, stdout, stderr) => {
                             if (stdout !== '') {
@@ -935,13 +892,14 @@ program
                     );
                 })) || hasError;
         }
-        if (options.lint || no_options) {
-            ignorePath = options.lint_ignore ? options.lint_ignore : eslintIgnorePath;
+        if (options.lint || noOptions) {
+            configPath = typeof options.lint === 'string' ? options.lint : eslintConfigPath;
+            ignorePath = options.lintIgnore ? options.lintIgnore : eslintIgnorePath;
             hasError =
                 (await new Promise(resolve => {
                     console.info('\nChecking eslinting...');
                     sh.exec(
-                        `${eslintPath} -c ${eslintConfigPath} --ignore-path ${ignorePath} --ignore-pattern "**/*.json" ${path}`,
+                        `${eslintPath} -c ${configPath} --ignore-path ${ignorePath} --ignore-pattern "**/*.json" ${path}`,
                         { silent: true, cwd: currentWorkingDir },
                         (code, stdout, stderr) => {
                             if (stdout !== '') {
@@ -963,34 +921,6 @@ program
                     );
                 })) || hasError;
         }
-        if (options.tslint || (no_options && fs.existsSync(`${process.cwd()}/tsconfig.json`))) {
-            const ignoreGlob = options.tslint_ignore ? ` -e ${options.tslint_ignore}` : '';
-            hasError =
-                (await new Promise(resolve => {
-                    console.info('\nChecking TSlint...');
-                    sh.exec(
-                        `${tslintPath} -c ${tslintConfigPath} -p ${tslintProjectPath}${ignoreGlob} ${path}`,
-                        { silent: true, cwd: currentWorkingDir },
-                        (code, stdout, stderr) => {
-                            if (stdout !== '') {
-                                console.info(stdout);
-                            }
-                            if (code !== 0) {
-                                console.error(stderr);
-                                console.error(
-                                    `Tslint checking ${ck.cyan('failed')}. ` +
-                                        `Try this: ${ck.cyan(packageName)} ${ck.cyan(
-                                            'fix -t'
-                                        )} ${path}`
-                                );
-                            } else {
-                                console.info('Tslint passed!');
-                            }
-                            resolve(code !== 0); // if error, true, else false
-                        }
-                    );
-                })) || hasError;
-        }
         if (hasError) {
             console.info('Error was found during the checking.');
             sh.exit(EXIT_CODE_ERROR);
@@ -1002,27 +932,36 @@ program
         console.log('\nTry this:\n  check [options] <path>');
     });
 
+function addCommandOptions(command) {
+    return command
+        .option('-f, --format [path/to/.prettierrc]', 'Only check format.')
+        .option('-l, --lint [path/to/.eslintrc]', 'Only check linting.')
+        .option('-F, --format-ignore <path>', 'Path to prettier ignore file.')
+        .alias('format_ignore')
+        .option('-L, --lint-ignore <path>', 'Path to eslint ignore file.')
+        .alias('lint_ignore')
+        .option('-T, --tslint-ignore <glob>', 'Glob pattern for tslint ignore.')
+        .option('--parser <name>', 'Specify a prettier parser to use. Use with --format.')
+        .option('--ignore-pattern <pattern>', 'Specify an ignore pattern to use. Use with --lint.')
+        .alias('ignore_pattern')
+        .option('--work-dir <dir>', 'specify the working directory.');
+}
+
 // Fix command
-program
-    .command('fix <path>')
-    .alias('f')
-    .description(
-        'Fixing files format and linting through <path>. <path> support glob patterns defined by the glob npm.'
-    )
-    .option('-f, --format', 'Only fix format')
-    .option('-l, --lint', 'Only fix linting')
-    .option('-t, --tslint', 'Only fix typescript files linting')
-    .option('-F, --format_ignore <path>', 'Path to prettier ignore file.')
-    .option('-L, --lint_ignore <path>', 'Path to eslint ignore file.')
-    .option('-T, --tslint_ignore <glob>', 'Glob pattern for tslint ignore.')
-    .option('--parser <name>', 'Specify a prettier parser to use. Use with --format.')
-    .option('--ignore_pattern <pattern>', 'Specify an ignore pattern to use. Use with --lint.')
-    .option('--work-dir <dir>', 'specify the working directory.')
+addCommandOptions(
+    program
+        .command('fix <path>')
+        .alias('f')
+        .description(
+            'Fixing files format and linting through <path>. <path> support glob patterns defined by the glob npm.'
+        )
+)
     .action(async (path, options) => {
         updateAppDir(options.workDir || process.cwd());
         path = `"${path}"`;
-        const no_options = !(options.format || options.lint || options.tslint);
+        const noOptions = !(options.format || options.lint);
         let ignorePath;
+        let configPath;
         let hasError = false;
         const invalidOptions = optionValidationCheck(options);
         if (invalidOptions) {
@@ -1036,8 +975,9 @@ program
             sh.exit(EXIT_CODE_ERROR);
             return;
         }
-        if (options.format || no_options) {
-            ignorePath = options.format_ignore ? options.format_ignore : prettierIgnorePath;
+        if (options.format || noOptions) {
+            configPath = typeof options.format === 'string' ? options.format : prettierConfigPath;
+            ignorePath = options.formatIgnore ? options.formatIgnore : prettierIgnorePath;
             const argParser = (options.parser && ` --parser ${options.parser}`) || '';
             console.info(
                 `Parser is set to: ${ck.cyan((argParser === '' && 'auto') || options.parser)}`
@@ -1045,7 +985,7 @@ program
             hasError =
                 (await new Promise(resolve => {
                     sh.exec(
-                        `${prettierPath} --config ${prettierConfigPath}${argParser} --ignore-path ${ignorePath}${argParser} --write ${path}`,
+                        `${prettierPath} --config ${configPath}${argParser} --ignore-path ${ignorePath}${argParser} --write ${path}`,
                         { silent: true, cwd: currentWorkingDir },
                         (code, stdout, stderr) => {
                             if (stdout !== '') {
@@ -1065,14 +1005,15 @@ program
                     );
                 })) || hasError;
         }
-        if (options.lint || no_options) {
-            ignorePath = options.lint_ignore ? options.lint_ignore : eslintIgnorePath;
-            const argIgnorePattern = ` --ignore-pattern ${options.ignore_pattern || '"**/*.json"'}`;
+        if (options.lint || noOptions) {
+            configPath = typeof options.lint === 'string' ? options.lint : eslintConfigPath;
+            ignorePath = options.lintIgnore ? options.lintIgnore : eslintIgnorePath;
+            const argIgnorePattern = ` --ignore-pattern ${options.ignorePattern || '"**/*.json"'}`;
             hasError =
                 (await new Promise(resolve => {
                     console.log('Auto fixing eslint...');
                     sh.exec(
-                        `${eslintPath} -c ${eslintConfigPath} --ignore-path ${ignorePath}${argIgnorePattern} --fix ${path}`,
+                        `${eslintPath} -c ${configPath} --ignore-path ${ignorePath}${argIgnorePattern} --fix ${path}`,
                         { silent: true, cwd: currentWorkingDir },
                         (code, stdout, stderr) => {
                             if (stdout !== '') {
@@ -1086,32 +1027,6 @@ program
                                 );
                             } else {
                                 console.info('Auto fixing eslint done!');
-                            }
-                            resolve(code !== 0); // if error, true, else false
-                        }
-                    );
-                })) || hasError;
-        }
-        if (options.tslint || (no_options && fs.existsSync(`${process.cwd()}/tsconfig.json`))) {
-            const ignoreGlob = options.tslint_ignore ? ` -e ${options.tslint_ignore}` : '';
-            console.log('Auto fixing tslint...');
-            hasError =
-                (await new Promise(resolve => {
-                    sh.exec(
-                        `${tslintPath} -c ${tslintConfigPath} -p ${tslintProjectPath}${ignoreGlob} --fix ${path}`,
-                        { silent: true, cwd: currentWorkingDir },
-                        (code, stdout, stderr) => {
-                            if (stdout !== '') {
-                                console.info(stdout);
-                            }
-                            if (code !== 0) {
-                                console.error(stderr);
-                                console.error(
-                                    `Auto fixing tslint ${ck.cyan('failed')}. ` +
-                                        'Error is as indicated above.'
-                                );
-                            } else {
-                                console.info('Auto fixing tslint passed!');
                             }
                             resolve(code !== 0); // if error, true, else false
                         }
@@ -1145,7 +1060,6 @@ program
     )
     .option('-f, --format', 'Update .prettierrc only.')
     .option('-l, --lint', 'Update .eslintrc only.')
-    .option('-t, --tslint', 'Update tslint.json only.')
     .option('--work-dir <dir>', 'specify the working directory.')
     .action(update);
 
