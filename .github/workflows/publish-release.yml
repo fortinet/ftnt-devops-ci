@@ -24,6 +24,11 @@ on:
           If specified, it will be used instead of the other versioning parameters.
           It must be a valid semver format.
         required: false
+      branch:
+        description: >-
+          Branch to use to create the release. (e.g. for prerelease testing)
+        required: false
+        default: main
 jobs:
   main_job:
     runs-on: ubuntu-latest
@@ -33,7 +38,7 @@ jobs:
         id: create-branch
         uses: fortinet/github-action-version-branch@1.1.2
         with:
-          base-branch: main
+          base-branch: ${{ github.event.inputs.branch}}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           name-prefix: rel_
           version-level: ${{ github.event.inputs.version-level }}
@@ -42,8 +47,8 @@ jobs:
       - name: checkout dev release branch
         uses: actions/checkout@v2
         with:
-          # set ref to the main
-          ref: main
+          # set ref to the branch
+          ref: ${{ github.event.inputs.branch}}
       # configure the commit author for the version bump commit
       # use the github-bot account
       - name: config commit author (bot)
