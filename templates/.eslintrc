@@ -84,7 +84,7 @@
     },
     // treat .js files as commonjs nodejs scripts
     "overrides": [{
-        "files": "**/*.js",
+        "files": "*.js",
         "parserOptions": {
             "sourceType": "script"
         },

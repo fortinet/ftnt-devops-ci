@@ -844,6 +844,12 @@ addCommandOptions(
     .action(async (path, options) => {
         updateAppDir(options.workDir || process.cwd());
         path = `"${path}"`;
+        if (!options.format) {
+            options.format = options.formatConf;
+        }
+        if (!options.lint) {
+            options.lint = options.lintConf;
+        }
         const noOptions = !(options.format || options.lint);
         let ignorePath;
         let configPath;
@@ -861,8 +867,11 @@ addCommandOptions(
             return;
         }
         if (options.format || noOptions) {
-            configPath = typeof options.format === 'string' ? options.format : prettierConfigPath;
+            configPath = options.formatConf || prettierConfigPath;
             ignorePath = options.formatIgnore ? options.formatIgnore : prettierIgnorePath;
+            if (options.printConfigPaths) {
+                console.info(`Config: ${configPath} Ignore: ${ignorePath}`);
+            }
             const argParser = (options.parser && ` --parser ${options.parser}`) || '';
             console.info(
                 `Parser is set to: ${ck.cyan((argParser === '' && 'auto') || options.parser)}`
@@ -893,8 +902,11 @@ addCommandOptions(
                 })) || hasError;
         }
         if (options.lint || noOptions) {
-            configPath = typeof options.lint === 'string' ? options.lint : eslintConfigPath;
+            configPath = options.lintConf || eslintConfigPath;
             ignorePath = options.lintIgnore ? options.lintIgnore : eslintIgnorePath;
+            if (options.printConfigPaths) {
+                console.info(`Config: ${configPath} Ignore: ${ignorePath}`);
+            }
             hasError =
                 (await new Promise(resolve => {
                     console.info('\nChecking eslinting...');
@@ -934,15 +946,16 @@ addCommandOptions(
 
 function addCommandOptions(command) {
     return command
-        .option('-f, --format', 'Only check format.')
-        .option('-l, --lint', 'Only check linting.')
-        .option('-f, --format [path/to/.prettierrc]', 'Only check format. Specify a .prettierrc file.')
-        .option('-l, --lint [path/to/.eslintrc]', 'Only check linting. Specify a .eslintrc file.')
+        .option('-f, --format', 'Only check format')
+        .option('-l, --lint', 'Only check format')
+        .option('-c, --format-conf <path>', 'Only check format. Specify a .prettierrc file.')
+        .option('-C, --lint-conf <path>', 'Only check linting. Specify a .eslintrc file.')
         .option('-F, --format-ignore <path>', 'Path to prettier ignore file.')
         .option('-L, --lint-ignore <path>', 'Path to eslint ignore file.')
         .option('-T, --tslint-ignore <glob>', 'Glob pattern for tslint ignore.')
         .option('--parser <name>', 'Specify a prettier parser to use. Use with --format.')
         .option('--ignore-pattern <pattern>', 'Specify an ignore pattern to use. Use with --lint.')
+        .option('--print-config-paths', 'Print all config paths')
         .option('--work-dir <dir>', 'specify the working directory.');
 }
 
@@ -958,6 +971,12 @@ addCommandOptions(
     .action(async (path, options) => {
         updateAppDir(options.workDir || process.cwd());
         path = `"${path}"`;
+        if (!options.format) {
+            options.format = options.formatConf;
+        }
+        if (!options.lint) {
+            options.lint = options.lintConf;
+        }
         const noOptions = !(options.format || options.lint);
         let ignorePath;
         let configPath;
@@ -975,8 +994,11 @@ addCommandOptions(
             return;
         }
         if (options.format || noOptions) {
-            configPath = typeof options.format === 'string' ? options.format : prettierConfigPath;
+            configPath = options.formatConf || prettierConfigPath;
             ignorePath = options.formatIgnore ? options.formatIgnore : prettierIgnorePath;
+            if (options.printConfigPaths) {
+                console.info(`Config: ${configPath} Ignore: ${ignorePath}`);
+            }
             const argParser = (options.parser && ` --parser ${options.parser}`) || '';
             console.info(
                 `Parser is set to: ${ck.cyan((argParser === '' && 'auto') || options.parser)}`
@@ -1005,8 +1027,11 @@ addCommandOptions(
                 })) || hasError;
         }
         if (options.lint || noOptions) {
-            configPath = typeof options.lint === 'string' ? options.lint : eslintConfigPath;
+            configPath = options.lintConf || eslintConfigPath;
             ignorePath = options.lintIgnore ? options.lintIgnore : eslintIgnorePath;
+            if (options.printConfigPaths) {
+                console.info(`Config: ${configPath} Ignore: ${ignorePath}`);
+            }
             const argIgnorePattern = ` --ignore-pattern ${options.ignorePattern || '"**/*.json"'}`;
             hasError =
                 (await new Promise(resolve => {

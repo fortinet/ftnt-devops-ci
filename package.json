@@ -4,13 +4,14 @@
     "description": "A Node.js project format checking and linting tool for CI practices.",
     "main": "bin/ftnt-devops-ci.js",
     "scripts": {
-        "check:format": "./bin/ftnt-devops-ci.js check --format=templates/.prettierrc --format-ignore=templates/.prettierignore \"**/*.{ts,js,json}\"",
-        "fix:format": "./bin/ftnt-devops-ci.js fix --format=templates/.prettierrc --format-ignore=templates/.prettierignore \"**/*.{ts,js,json}\"",
-        "check:lint": "./bin/ftnt-devops-ci.js check --lint=templates/.eslintrc --lint-ignore=templates/.eslintignore \"**/*.{ts,js,json}\"",
-        "fix:lint": "./bin/ftnt-devops-ci.js fix --lint=templates/.eslintrc --lint-ignore=templates/.eslintignore \"**/*.{ts,js,json}\"",
-        "check": "./bin/ftnt-devops-ci.js check --lint=templates/.eslintrc --format=templates/.prettierrc --lint-ignore=templates/.eslintignore --format-ignore=templates/.prettierignore \"**/*.{ts,js,json}\"",
-        "fix": "./bin/ftnt-devops-ci.js fix --lint=templates/.eslintrc --format=templates/.prettierrc --lint-ignore=templates/.eslintignore --format-ignore=templates/.prettierignore \"**/*.{ts,js,json}\"",
-        "test": "npm run check  && npm run check:format && npm run check:lint && npm run fix && npm run fix:format && npm run fix:lint && mocha",
+        "check:format": "./bin/ftnt-devops-ci.js check --format-conf=templates/.prettierrc --format-ignore=templates/.prettierignore \"**/*.{ts,js,json}\"",
+        "fix:format": "./bin/ftnt-devops-ci.js fix --format-conf=templates/.prettierrc --format-ignore=templates/.prettierignore \"**/*.{ts,js,json}\"",
+        "check:lint": "./bin/ftnt-devops-ci.js check --lint-conf=templates/.eslintrc --lint-ignore=templates/.eslintignore \"**/*.{ts,js,json}\"",
+        "fix:lint": "./bin/ftnt-devops-ci.js fix --lint-conf=templates/.eslintrc --lint-ignore=templates/.eslintignore \"**/*.{ts,js,json}\"",
+        "check": "./bin/ftnt-devops-ci.js check --lint-conf=templates/.eslintrc --format-conf=templates/.prettierrc --lint-ignore=templates/.eslintignore --format-ignore=templates/.prettierignore \"**/*.{ts,js,json}\"",
+        "fix": "./bin/ftnt-devops-ci.js fix --lint-conf=templates/.eslintrc --format-conf=templates/.prettierrc --lint-ignore=templates/.eslintignore --format-ignore=templates/.prettierignore \"**/*.{ts,js,json}\"",
+        "check-relative": "cd templates && ../bin/ftnt-devops-ci.js check --lint --format --print-config-paths '../**/*.{ts,js,json}'",
+        "test": "npm run check && npm run check:format && npm run check:lint && npm run fix && npm run fix:format && npm run fix:lint && npm run check-relative && mocha",
         "make-dist": "npm pack"
     },
     "repository": {
