@@ -934,8 +934,10 @@ addCommandOptions(
 
 function addCommandOptions(command) {
     return command
-        .option('-f, --format [path/to/.prettierrc]', 'Only check format.')
-        .option('-l, --lint [path/to/.eslintrc]', 'Only check linting.')
+        .option('-f, --format', 'Only check format.')
+        .option('-l, --lint', 'Only check linting.')
+        .option('-f, --format [path/to/.prettierrc]', 'Only check format. Specify a .prettierrc file.')
+        .option('-l, --lint [path/to/.eslintrc]', 'Only check linting. Specify a .eslintrc file.')
         .option('-F, --format-ignore <path>', 'Path to prettier ignore file.')
         .option('-L, --lint-ignore <path>', 'Path to eslint ignore file.')
         .option('-T, --tslint-ignore <glob>', 'Glob pattern for tslint ignore.')
