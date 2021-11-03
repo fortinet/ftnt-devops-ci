@@ -937,13 +937,10 @@ function addCommandOptions(command) {
         .option('-f, --format [path/to/.prettierrc]', 'Only check format.')
         .option('-l, --lint [path/to/.eslintrc]', 'Only check linting.')
         .option('-F, --format-ignore <path>', 'Path to prettier ignore file.')
-        .alias('format_ignore')
         .option('-L, --lint-ignore <path>', 'Path to eslint ignore file.')
-        .alias('lint_ignore')
         .option('-T, --tslint-ignore <glob>', 'Glob pattern for tslint ignore.')
         .option('--parser <name>', 'Specify a prettier parser to use. Use with --format.')
         .option('--ignore-pattern <pattern>', 'Specify an ignore pattern to use. Use with --lint.')
-        .alias('ignore_pattern')
         .option('--work-dir <dir>', 'specify the working directory.');
 }
 
