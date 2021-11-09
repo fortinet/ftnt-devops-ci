@@ -1,13 +1,17 @@
 {
     "name": "ftnt-devops-ci",
-    "version": "1.1.5",
+    "version": "1.1.7-hotfix.2",
     "description": "A Node.js project format checking and linting tool for CI practices.",
     "main": "bin/ftnt-devops-ci.js",
     "scripts": {
-        "format": "prettier --write \"**/*.{js,json}\"",
-        "format:check": "prettier --check \"**/*.{js,json}\"",
-        "lint": "eslint",
-        "test": "mocha",
+        "check:format": "./bin/ftnt-devops-ci.js check --format-conf=templates/.prettierrc --format-ignore=templates/.prettierignore \"**/*.{ts,js,json}\"",
+        "fix:format": "./bin/ftnt-devops-ci.js fix --format-conf=templates/.prettierrc --format-ignore=templates/.prettierignore \"**/*.{ts,js,json}\"",
+        "check:lint": "./bin/ftnt-devops-ci.js check --lint-conf=templates/.eslintrc --lint-ignore=templates/.eslintignore \"**/*.{ts,js,json}\"",
+        "fix:lint": "./bin/ftnt-devops-ci.js fix --lint-conf=templates/.eslintrc --lint-ignore=templates/.eslintignore \"**/*.{ts,js,json}\"",
+        "check": "./bin/ftnt-devops-ci.js check --lint-conf=templates/.eslintrc --format-conf=templates/.prettierrc --lint-ignore=templates/.eslintignore --format-ignore=templates/.prettierignore \"**/*.{ts,js,json}\"",
+        "fix": "./bin/ftnt-devops-ci.js fix --lint-conf=templates/.eslintrc --format-conf=templates/.prettierrc --lint-ignore=templates/.eslintignore --format-ignore=templates/.prettierignore \"**/*.{ts,js,json}\"",
+        "check-relative": "cd templates && ../bin/ftnt-devops-ci.js check --lint --format --print-config-paths '../**/*.{ts,js,json}'",
+        "test": "npm run check && npm run check:format && npm run check:lint && npm run fix && npm run fix:format && npm run fix:lint && npm run check-relative && mocha",
         "make-dist": "npm pack"
     },
     "repository": {
@@ -29,20 +33,18 @@
         "ftnt-devops-ci": "bin/ftnt-devops-ci.js"
     },
     "dependencies": {
-        "@typescript-eslint/eslint-plugin": "^4.33.0",
-        "@typescript-eslint/parser": "^4.33.0",
+        "@typescript-eslint/eslint-plugin": "^5.3.0",
+        "@typescript-eslint/parser": "^5.3.0",
         "chalk": "^3.0.0",
         "commander": "^4.1.1",
         "comment-json": "^2.4.2",
         "eslint": "^8.1.0",
         "eslint-config-prettier": "^8.3.0",
         "eslint-plugin-mocha": "^9.0.0",
-        "eslint-plugin-prettier": "^4.0.0",
         "inquirer": "^7.3.3",
         "path-parse": "^1.0.7",
         "prettier": "^2.4.1",
         "shelljs": "^0.8.4",
-        "tslint": "^5.20.1",
         "typescript": "^4.4.4"
     },
     "devDependencies": {
