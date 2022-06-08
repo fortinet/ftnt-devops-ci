@@ -4,11 +4,11 @@
 const fs = require('fs');
 const https = require('https');
 const pa = require('path');
-const sh = require('shelljs');
 const iq = require('inquirer');
 const cj = require('comment-json');
 const ck = require('chalk');
 const program = require('commander');
+const { exec } = require('child_process');
 
 const fileExist = (filePath, printStdErr = true) => {
     try {
@@ -142,8 +142,9 @@ const isPackageInstalledScoped = async (pkgName, scope) => {
         const command = `npm list${
             (scope === INSTALL_SCOPE_GLOBAL && ' -g') || ''
         } --depth 0 ${pkgName}`;
-        sh.exec(command, { silent: true }, (code, stdout) => {
-            if (code !== 0) {
+        const cp = exec(command, (err, stdout) => {
+            stdout = stdout.toString();
+            if (err || cp.exitCode !== 0) {
                 resolve({ name: null, version: null });
             }
             const [, name, version] = new RegExp(`(${pkgName})@(\\S*)`, 'gmi').exec(stdout) || [
@@ -605,7 +606,7 @@ const configNpm = async options => {
                 ' You can run the following command to create a node module:'
         );
         console.info(ck.cyan('npm init'));
-        sh.exit(EXIT_CODE_ERROR);
+        process.exit(EXIT_CODE_ERROR);
     }
 
     let { referenceScope, modulePath } = await detectModule(options);
@@ -863,7 +864,7 @@ addCommandOptions(
                     'check -h'
                 )} to read usage info.`
             );
-            sh.exit(EXIT_CODE_ERROR);
+            process.exit(EXIT_CODE_ERROR);
             return;
         }
         if (options.format || noOptions) {
@@ -878,14 +879,16 @@ addCommandOptions(
             );
             hasError =
                 (await new Promise(resolve => {
-                    sh.exec(
+                    const cp = exec(
                         `${prettierPath} --config ${configPath} --ignore-path ${ignorePath}${argParser} --check ${path}`,
-                        { silent: true, cwd: currentWorkingDir },
-                        (code, stdout, stderr) => {
+                        { currentWorkingDir },
+                        (err, stdout, stderr) => {
+                            stdout = stdout.toString();
+                            stderr = stderr.toString();
                             if (stdout !== '') {
                                 console.info(stdout);
                             }
-                            if (code !== 0) {
+                            if (err || cp.exitCode !== 0) {
                                 console.info(stderr);
                                 console.info(
                                     `Format checking ${ck.cyan('failed')}. ` +
@@ -896,7 +899,7 @@ addCommandOptions(
                             } else {
                                 console.info('Formatting passed!');
                             }
-                            resolve(code !== 0); // if error, true, else false
+                            resolve(err || cp.exitCode !== 0); // if error, true, else false
                         }
                     );
                 })) || hasError;
@@ -910,14 +913,17 @@ addCommandOptions(
             hasError =
                 (await new Promise(resolve => {
                     console.info('\nChecking eslinting...');
-                    sh.exec(
+                    const cp = exec(
                         `${eslintPath} -c ${configPath} --ignore-path ${ignorePath} --ignore-pattern "**/*.json" ${path}`,
-                        { silent: true, cwd: currentWorkingDir },
-                        (code, stdout, stderr) => {
+                        { cwd: currentWorkingDir },
+                        (err, stdout, stderr) => {
+                            // these might be a buffer
+                            stdout = stdout.toString();
+                            stderr = stderr.toString();
                             if (stdout !== '') {
                                 console.info(stdout);
                             }
-                            if (code !== 0) {
+                            if (err || cp.exitCode !== 0) {
                                 console.error(stderr);
                                 console.info(
                                     `Eslint checking ${ck.cyan('failed')}. ` +
@@ -928,14 +934,14 @@ addCommandOptions(
                             } else {
                                 console.info('Eslint passed!');
                             }
-                            resolve(code !== 0); // if error, true, else false
+                            resolve(err || cp.exitCode !== 0); // if error, true, else false
                         }
                     );
                 })) || hasError;
         }
         if (hasError) {
             console.info('Error was found during the checking.');
-            sh.exit(EXIT_CODE_ERROR);
+            process.exit(EXIT_CODE_ERROR);
         } else {
             console.info('All checking passed.');
         }
@@ -990,7 +996,7 @@ addCommandOptions(
                     'check -h'
                 )} to read usage info.`
             );
-            sh.exit(EXIT_CODE_ERROR);
+            process.exit(EXIT_CODE_ERROR);
             return;
         }
         if (options.format || noOptions) {
@@ -1005,14 +1011,16 @@ addCommandOptions(
             );
             hasError =
                 (await new Promise(resolve => {
-                    sh.exec(
+                    const cp = exec(
                         `${prettierPath} --config ${configPath}${argParser} --ignore-path ${ignorePath}${argParser} --write ${path}`,
                         { silent: true, cwd: currentWorkingDir },
-                        (code, stdout, stderr) => {
+                        (err, stdout, stderr) => {
+                            stdout = stdout.toString();
+                            stderr = stderr.toString();
                             if (stdout !== '') {
                                 console.info(stdout);
                             }
-                            if (code !== 0) {
+                            if (err || cp.exitCode !== 0) {
                                 console.info(stderr);
                                 console.info(
                                     `Auto fixing format ${ck.cyan('failed')}. ` +
@@ -1021,7 +1029,7 @@ addCommandOptions(
                             } else {
                                 console.info('Auto fixing format done!');
                             }
-                            resolve(code !== 0); // if error, true, else false
+                            resolve(err || cp.exitCode !== 0); // if error, true, else false
                         }
                     );
                 })) || hasError;
@@ -1036,14 +1044,16 @@ addCommandOptions(
             hasError =
                 (await new Promise(resolve => {
                     console.log('Auto fixing eslint...');
-                    sh.exec(
+                    const cp = exec(
                         `${eslintPath} -c ${configPath} --ignore-path ${ignorePath}${argIgnorePattern} --fix ${path}`,
                         { silent: true, cwd: currentWorkingDir },
-                        (code, stdout, stderr) => {
+                        (err, stdout, stderr) => {
+                            stdout = stdout.toString();
+                            stderr = stderr.toString();
                             if (stdout !== '') {
                                 console.info(stdout);
                             }
-                            if (code !== 0) {
+                            if (err || cp.exitCodeode !== 0) {
                                 console.error(stderr);
                                 console.info(
                                     `Auto fixing eslint ${ck.cyan('failed')}. ` +
@@ -1052,14 +1062,14 @@ addCommandOptions(
                             } else {
                                 console.info('Auto fixing eslint done!');
                             }
-                            resolve(code !== 0); // if error, true, else false
+                            resolve(err || cp.exitCode !== 0); // if error, true, else false
                         }
                     );
                 })) || hasError;
         }
         if (hasError) {
             console.info('Error was found during the auto fixing.');
-            sh.exit(EXIT_CODE_ERROR);
+            process.exit(EXIT_CODE_ERROR);
         } else {
             console.info('All auto fixing passed.');
         }
