@@ -10,14 +10,18 @@ A Node.js project format checking and linting tool for CI practices.
 
 Use github link:
 
+Go to the releases page:
+
+Find the latest release, and copy the *url* of the tgz file (e.g.: ftnt-devops-ci-*.tgz)
+
 ```bash
-npm install --save-dev https://github.com/fortinet/ftnt-devops-ci/releases/download/1.1.2/ftnt-devops-ci-1.1.2.tgz
+npm install --save-dev <the url of the tgz>
 ```
 
 Install globally:
 
 ```bash
-sudo npm install -g https://github.com/fortinet/ftnt-devops-ci/releases/download/1.1.2/ftnt-devops-ci-1.1.2.tgz
+sudo npm install -g <the url of the tgz>
 ```
 
 ## Usage
